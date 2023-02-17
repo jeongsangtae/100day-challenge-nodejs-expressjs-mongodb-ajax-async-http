@@ -27,12 +27,17 @@ async function fetchCommentsForPost() {
   const response = await fetch(`/posts/${postId}/comments`);
   const responseData = await response.json();
 
-  const commentsList = createCommentList(responseData);
-  commentsSection.innerHTML = "";
-  commentsSection.appendChild(commentsList);
+  if (responseData && responseData.length > 0) {
+    const commentsList = createCommentList(responseData);
+    commentsSection.innerHTML = "";
+    commentsSection.appendChild(commentsList);
+  } else {
+    commentsSection.firstElementChild.innerHTML =
+      "We could not find any comments. May be add one?";
+  }
 }
 
-function saveComment(event) {
+async function saveComment(event) {
   event.preventDefault();
   const postId = commentsForm.dataset.postid;
 
@@ -42,13 +47,15 @@ function saveComment(event) {
   const comment = { title: enteredTitle, text: enteredText };
 
   // post 요청 관련 fetch는 두 번째 매개변수 추가
-  fetch(`/posts/${postId}/comments`, {
+  const response = await fetch(`/posts/${postId}/comments`, {
     method: "POST",
     body: JSON.stringify(comment),
     headers: {
       "Content-Type": "application/json",
     },
   });
+
+  fetchCommentsForPost();
 }
 
 loadCommentsBtn.addEventListener("click", fetchCommentsForPost);
