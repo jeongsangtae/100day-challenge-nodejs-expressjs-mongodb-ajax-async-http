@@ -23,6 +23,7 @@ function createCommentList(comments) {
 
 async function fetchCommentsForPost() {
   const postId = loadCommentsBtn.dataset.postid;
+  // get 요청 관련 fetch
   const response = await fetch(`/posts/${postId}/comments`);
   const responseData = await response.json();
 
@@ -33,11 +34,21 @@ async function fetchCommentsForPost() {
 
 function saveComment(event) {
   event.preventDefault();
+  const postId = commentsForm.dataset.postid;
 
   const enteredTitle = commentTitle.value;
   const enteredText = commentText.value;
 
-  console.log(enteredTitle, enteredText);
+  const comment = { title: enteredTitle, text: enteredText };
+
+  // post 요청 관련 fetch는 두 번째 매개변수 추가
+  fetch(`/posts/${postId}/comments`, {
+    method: "POST",
+    body: JSON.stringify(comment),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 }
 
 loadCommentsBtn.addEventListener("click", fetchCommentsForPost);
