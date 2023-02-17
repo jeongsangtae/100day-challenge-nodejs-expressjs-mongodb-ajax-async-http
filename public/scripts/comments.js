@@ -23,17 +23,26 @@ function createCommentList(comments) {
 
 async function fetchCommentsForPost() {
   const postId = loadCommentsBtn.dataset.postid;
-  // get 요청 관련 fetch
-  const response = await fetch(`/posts/${postId}/comments`);
-  const responseData = await response.json();
+  try {
+    // get 요청 관련 fetch
+    const response = await fetch(`/posts/${postId}/comments`);
 
-  if (responseData && responseData.length > 0) {
-    const commentsList = createCommentList(responseData);
-    commentsSection.innerHTML = "";
-    commentsSection.appendChild(commentsList);
-  } else {
-    commentsSection.firstElementChild.innerHTML =
-      "We could not find any comments. May be add one?";
+    if (!response.ok) {
+      alert("Fetching comments failed!");
+      return;
+    }
+    const responseData = await response.json();
+
+    if (responseData && responseData.length > 0) {
+      const commentsList = createCommentList(responseData);
+      commentsSection.innerHTML = "";
+      commentsSection.appendChild(commentsList);
+    } else {
+      commentsSection.firstElementChild.innerHTML =
+        "We could not find any comments. May be add one?";
+    }
+  } catch (error) {
+    alert("Getting comments failed!");
   }
 }
 
@@ -46,16 +55,23 @@ async function saveComment(event) {
 
   const comment = { title: enteredTitle, text: enteredText };
 
-  // post 요청 관련 fetch는 두 번째 매개변수 추가
-  const response = await fetch(`/posts/${postId}/comments`, {
-    method: "POST",
-    body: JSON.stringify(comment),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  fetchCommentsForPost();
+  try {
+    // post 요청 관련 fetch는 두 번째 매개변수 추가
+    const response = await fetch(`/posts/${postId}/comments`, {
+      method: "POST",
+      body: JSON.stringify(comment),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.ok) {
+      fetchCommentsForPost();
+    } else {
+      alert("Could not send comment!");
+    }
+  } catch (error) {
+    alert("Could net send request - maybe try again later!");
+  }
 }
 
 loadCommentsBtn.addEventListener("click", fetchCommentsForPost);
